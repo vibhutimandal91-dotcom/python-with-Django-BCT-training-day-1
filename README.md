@@ -1,0 +1,1 @@
+# python-with-Django-BCT-training-day-1
