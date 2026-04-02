@@ -1,0 +1,146 @@
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.enum.text import PP_ALIGN
+from pptx.dml.color import RGBColor
+from pptx.enum.shapes import MSO_SHAPE
+
+# Create presentation
+prs = Presentation()
+prs.slide_width = Inches(13.333)
+prs.slide_height = Inches(7.5)
+
+# Theme helpers
+TITLE_COLOR = RGBColor(30, 41, 59)
+ACCENT = RGBColor(37, 99, 235)
+TEXT = RGBColor(55, 65, 81)
+LIGHT = RGBColor(243, 244, 246)
+
+def add_title_slide(title, subtitle):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    slide.background.fill.solid()
+    slide.background.fill.fore_color.rgb = RGBColor(248, 250, 252)
+    
+    shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, prs.slide_width, Inches(1.0))
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = ACCENT
+    shape.line.fill.background()
+    
+    tx = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(11.7), Inches(1.5))
+    tf = tx.text_frame
+    p = tf.paragraphs[0]
+    run = p.add_run()
+    run.text = title
+    run.font.size = Pt(28)
+    run.font.bold = True
+    run.font.color.rgb = TITLE_COLOR
+    
+    tx2 = slide.shapes.add_textbox(Inches(0.9), Inches(3.0), Inches(11.0), Inches(1.2))
+    tf2 = tx2.text_frame
+    p2 = tf2.paragraphs[0]
+    run2 = p2.add_run()
+    run2.text = subtitle
+    run2.font.size = Pt(18)
+    run2.font.color.rgb = TEXT
+
+def add_bullets_slide(title, bullets, notes=None):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    slide.background.fill.solid()
+    slide.background.fill.fore_color.rgb = RGBColor(255, 255, 255)
+    
+    title_box = slide.shapes.add_textbox(Inches(0.6), Inches(0.4), Inches(12), Inches(0.7))
+    p = title_box.text_frame.paragraphs[0]
+    r = p.add_run()
+    r.text = title
+    r.font.size = Pt(26)
+    r.font.bold = True
+    r.font.color.rgb = TITLE_COLOR
+    
+    line = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.6), Inches(1.1), Inches(2.8), Inches(0.08))
+    line.fill.solid()
+    line.fill.fore_color.rgb = ACCENT
+    line.line.fill.background()
+    
+    body = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(11.5), Inches(5.2))
+    tf = body.text_frame
+    tf.word_wrap = True
+    for i, b in enumerate(bullets):
+        if i == 0:
+            p = tf.paragraphs[0]
+        else:
+            p = tf.add_paragraph()
+        p.text = b
+        p.level = 0
+        p.font.size = Pt(22)
+        p.font.color.rgb = TEXT
+        p.space_after = Pt(12)
+    
+    if notes:
+        note_box = slide.shapes.add_textbox(Inches(0.8), Inches(6.5), Inches(11.5), Inches(0.5))
+        p = note_box.text_frame.paragraphs[0]
+        r = p.add_run()
+        r.text = notes
+        r.font.size = Pt(12)
+        r.font.italic = True
+        r.font.color.rgb = RGBColor(107, 114, 128)
+
+def add_table_slide(title, headers, rows):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    slide.background.fill.solid()
+    slide.background.fill.fore_color.rgb = RGBColor(255, 255, 255)
+    
+    title_box = slide.shapes.add_textbox(Inches(0.6), Inches(0.4), Inches(12), Inches(0.7))
+    p = title_box.text_frame.paragraphs[0]
+    r = p.add_run()
+    r.text = title
+    r.font.size = Pt(26)
+    r.font.bold = True
+    r.font.color.rgb = TITLE_COLOR
+    
+    rows_count = len(rows) + 1
+    cols_count = len(headers)
+    table = slide.shapes.add_table(rows_count, cols_count, Inches(0.5), Inches(1.4), Inches(12.2), Inches(5.5)).table
+    
+    for i, h in enumerate(headers):
+        cell = table.cell(0, i)
+        cell.text = h
+        for p in cell.text_frame.paragraphs:
+            for run in p.runs:
+                run.font.bold = True
+                run.font.size = Pt(16)
+                run.font.color.rgb = RGBColor(255,255,255)
+        cell.fill.solid()
+        cell.fill.fore_color.rgb = ACCENT
+    
+    for r_idx, row in enumerate(rows, start=1):
+        for c_idx, val in enumerate(row):
+            cell = table.cell(r_idx, c_idx)
+            cell.text = val
+            for p in cell.text_frame.paragraphs:
+                for run in p.runs:
+                    run.font.size = Pt(14)
+                    run.font.color.rgb = TEXT
+            if r_idx % 2 == 0:
+                cell.fill.solid()
+                cell.fill.fore_color.rgb = LIGHT
+
+# Slides content
+add_title_slide(
+    "CSMA/CD and CSMA/CA",
+    "Computer Networks Presentation\nPrepared for academic use"
+)
+
+add_bullets_slide("1. Introduction", [
+    "CSMA stands for Carrier Sense Multiple Access.",
+    "It is a network access method used when many devices share the same communication medium.",
+    "Before sending data, a device first checks whether the channel is free or busy.",
+    "Two common methods are CSMA/CD and CSMA/CA."
+])
+
+add_bullets_slide("2. Description of CSMA", [
+    "Carrier Sense: A device listens to the channel before transmitting.",
+    "Multiple Access: Many devices can use the same network medium.",
+    "Main goal: Reduce data collisions and improve communication efficiency.",
+    "Used mainly in Ethernet and Wireless LAN environments."
+])
+
+add_bullets_slide("3. CSMA/CD Overview
